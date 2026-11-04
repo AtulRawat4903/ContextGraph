@@ -7,10 +7,7 @@ function App() {
   const [status, setStatus] = useState<ConnectionStatus>("checking");
   const [message, setMessage] = useState("");
 
-  const checkConnection = useCallback(async () => {
-    setStatus("checking");
-    setMessage("");
-
+  const performHealthCheck = useCallback(async () => {
     try {
       const data = await getHealth();
 
@@ -22,21 +19,48 @@ function App() {
       setMessage(
         error instanceof Error
           ? error.message
-          : "Unable to connect to the backend"
+          : "Unable to connect to the backend",
       );
     }
   }, []);
 
+  const checkConnection = useCallback(async () => {
+    setStatus("checking");
+    setMessage("");
+
+    await performHealthCheck();
+  }, [performHealthCheck]);
+
   useEffect(() => {
-    void checkConnection();
-  }, [checkConnection]);
+    let ignore = false;
+
+    getHealth()
+      .then((data) => {
+        if (ignore) return;
+
+        setStatus("connected");
+        setMessage(data.message);
+      })
+      .catch((error) => {
+        if (ignore) return;
+
+        setStatus("disconnected");
+        setMessage(
+          error instanceof Error
+            ? error.message
+            : "Unable to connect to the backend",
+        );
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   return (
     <main className="min-h-screen bg-[#121212] flex items-center justify-center px-4">
       <div className="w-full max-w-md rounded-2xl border border-[#333] bg-[#1c1c1c] p-8 text-center shadow-xl">
-        <h1 className="text-3xl font-bold text-white">
-          ContextGraph
-        </h1>
+        <h1 className="text-3xl font-bold text-white">ContextGraph</h1>
 
         <p className="mt-2 text-sm text-gray-400">
           AI-powered knowledge and incident assistant
@@ -60,11 +84,7 @@ function App() {
           </span>
         </div>
 
-        {message && (
-          <p className="mt-4 text-sm text-gray-400">
-            {message}
-          </p>
-        )}
+        {message && <p className="mt-4 text-sm text-gray-400">{message}</p>}
 
         <button
           onClick={checkConnection}
