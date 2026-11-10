@@ -1,11 +1,8 @@
 import { env } from "../config/env";
+import { healthResponseSchema } from "../schemas/api.schema";
+import type { HealthResponse } from "../schemas/api.schema";
 
 const API_BASE_URL = env.API_URL;
-
-export interface HealthResponse {
-  success: boolean;
-  message: string;
-}
 
 export const getHealth = async (): Promise<HealthResponse> => {
   const response = await fetch(`${API_BASE_URL}/api/health`);
@@ -14,7 +11,7 @@ export const getHealth = async (): Promise<HealthResponse> => {
     throw new Error(`API request failed: ${response.status}`);
   }
 
-  const data: HealthResponse = await response.json();
+  const data: unknown = await response.json();
 
-  return data;
+  return healthResponseSchema.parse(data);
 };
