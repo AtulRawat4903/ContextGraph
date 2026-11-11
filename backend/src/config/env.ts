@@ -6,16 +6,15 @@ const envSchema = z.object({
     .enum(["development", "production", "test"])
     .default("development"),
 
-  PORT: z.coerce
-    .number()
-    .int()
-    .min(1)
-    .max(65535)
-    .default(5000),
+  PORT: z.coerce.number().int().min(1).max(65535).default(5000),
 
-  CLIENT_URL: z
-    .url()
-    .default("http://localhost:5173"),
+  CLIENT_URL: z.url().default("http://localhost:5173"),
+
+  DB_HOST: z.string().min(1),
+  DB_PORT: z.coerce.number().int().min(1).max(65535).default(5432),
+  DB_NAME: z.string().min(1),
+  DB_USER: z.string().min(1),
+  DB_PASSWORD: z.string().min(1),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);
