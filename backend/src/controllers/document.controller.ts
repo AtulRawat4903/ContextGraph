@@ -1,5 +1,6 @@
 import type { RequestHandler } from "express";
 import { z } from "zod";
+import { getAuthenticatedUserId } from "../utils/auth-context.js";
 
 import { findOwnedDocumentById } from "../repositories/document.repository.js";
 
@@ -16,7 +17,7 @@ export const getDocument: RequestHandler = async (req, res) => {
     return;
   }
 
-  const userId = res.locals.authUserId as string;
+  const userId = getAuthenticatedUserId(res.locals);
 
   const document = await findOwnedDocumentById(parsedId.data, userId);
 
